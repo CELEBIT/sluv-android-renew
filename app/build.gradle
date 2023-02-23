@@ -3,6 +3,11 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
+def propertiesFile = rootProject.file("local.properties")
+def properties = new Properties()
+properties.load(new FileInputStream(propertiesFile))
+def KAKAO_NATIVE_APP_KEY = properties.getProperty('KAKAO_NATIVE_APP_KEY')
+
 android {
     namespace 'com.sluv.sluv'
     compileSdk 33
@@ -15,6 +20,9 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        manifestPlaceholders = [KAKAO_NATIVE_APP_KEY: KAKAO_NATIVE_APP_KEY]
+        buildConfigField "String", "KAKAO_NATIVE_APP_KEY", properties['KAKAO_NATIVE_APP_KEY']
     }
 
     buildTypes {
@@ -57,4 +65,7 @@ dependencies {
 
     // https://github.com/square/okhttp/tree/master/okhttp-logging-interceptor
     implementation "com.squareup.okhttp3:logging-interceptor:4.9.1"
+
+    // 카카오 로그인
+    implementation "com.kakao.sdk:v2-user:2.12.1"
 }

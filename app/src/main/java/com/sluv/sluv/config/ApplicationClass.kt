@@ -1,6 +1,8 @@
 package com.sluv.sluv.config
 
 import android.app.Application
+import com.kakao.sdk.common.KakaoSdk
+import com.sluv.sluv.BuildConfig
 import com.sluv.sluv.util.PreferenceUtil
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -18,8 +20,10 @@ class ApplicationClass : Application() {
         // sharedPreference : 초기 정보를 받기 위한 prefs 생성
         lateinit var prefs: PreferenceUtil
 
-        // JWT Token Header 키 값
+        // sharedPreference 키 값
         val JWT_TOKEN = "JWT-TOKEN"
+        val LOGIN_TYPE = "LOGIN_TYPE"
+        val KAKAO_LOGIN = "KAKAO_LOGIN"
     }
 
     override fun onCreate() {
@@ -30,6 +34,9 @@ class ApplicationClass : Application() {
 
         // 레트로핏 인스턴스 생성
         initRetrofitInstance()
+
+        // Kakao SDK 초기화
+        KakaoSdk.init(this, BuildConfig.KAKAO_NATIVE_APP_KEY)
     }
 
     // 레트로핏 인스턴스를 생성하고, 레트로핏에 각종 설정값들을 지정해줍니다.
