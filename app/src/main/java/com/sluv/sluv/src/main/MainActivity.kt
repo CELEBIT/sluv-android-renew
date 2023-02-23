@@ -1,7 +1,8 @@
-package com.sluv.sluv
+package com.sluv.sluv.src.main
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.sluv.sluv.R
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
