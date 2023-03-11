@@ -13,7 +13,7 @@ class JwtInterceptor : Interceptor {
         val builder: Request.Builder = chain.request().newBuilder()
         val jwtToken: String? = prefs.getString(JWT_TOKEN, null)
         if (jwtToken != null) {
-            builder.addHeader("JWT-TOKEN", jwtToken)
+            builder.addHeader("X-AUTH-TOKEN", jwtToken)
         }
         return chain.proceed(builder.build())
     }

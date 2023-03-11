@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 
 class ApplicationClass : Application() {
     companion object {
-        const val API_URL = "http://15.165.98.183" // 테스트 서버
+        const val API_URL = "http://15.165.98.183:8080" // 테스트 서버
 
         // Retrofit 인스턴스, 앱 실행시 한번만 생성하여 사용합니다.
         lateinit var sRetrofit: Retrofit
@@ -22,8 +22,7 @@ class ApplicationClass : Application() {
 
         // sharedPreference 키 값
         val JWT_TOKEN = "JWT-TOKEN"
-        val LOGIN_TYPE = "LOGIN_TYPE"
-        val KAKAO_LOGIN = "KAKAO_LOGIN"
+        val KAKAO_SNS_TYPE = "KAKAO"
     }
 
     override fun onCreate() {

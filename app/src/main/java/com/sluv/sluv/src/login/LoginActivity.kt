@@ -1,18 +1,29 @@
 package com.sluv.sluv.src.login
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.common.model.ClientError
 import com.kakao.sdk.common.model.ClientErrorCause
 import com.kakao.sdk.user.UserApiClient
-import com.sluv.sluv.config.ApplicationClass.Companion.KAKAO_LOGIN
-import com.sluv.sluv.config.ApplicationClass.Companion.LOGIN_TYPE
+import com.sluv.sluv.config.ApplicationClass
+import com.sluv.sluv.config.ApplicationClass.Companion.JWT_TOKEN
+import com.sluv.sluv.config.ApplicationClass.Companion.KAKAO_SNS_TYPE
+import com.sluv.sluv.config.ApplicationClass.Companion.prefs
 import com.sluv.sluv.config.BaseActivity
 import com.sluv.sluv.databinding.ActivityLoginBinding
-import com.sluv.sluv.util.PreferenceUtil
+import com.sluv.sluv.src.login.models.LoginRequest
+import com.sluv.sluv.src.login.models.LoginResponse
+import com.sluv.sluv.src.login.network.LoginService
+import com.sluv.sluv.src.main.MainActivity
 
-class LoginActivity : BaseActivity<ActivityLoginBinding>(ActivityLoginBinding::inflate) {
+interface LoginActivityView {
+    fun onPostLoginSuccess(response: LoginResponse)
+    fun onPostLoginFailure(message: String)
+}
+
+class LoginActivity : BaseActivity<ActivityLoginBinding>(ActivityLoginBinding::inflate), LoginActivityView {
 
     val TAG = "LoginActivity"
 
@@ -27,9 +38,8 @@ class LoginActivity : BaseActivity<ActivityLoginBinding>(ActivityLoginBinding::i
                 Log.i(TAG, "카카오계정으로 로그인 성공 ${token.accessToken}")
 
                 // 카카오 로그인 API 호출
-
+                LoginService(this).tryPostLogin(LoginRequest(token.accessToken, KAKAO_SNS_TYPE))
             }
-
         }
 
         // 카카오 로그인 버튼 클릭
@@ -52,11 +62,33 @@ class LoginActivity : BaseActivity<ActivityLoginBinding>(ActivityLoginBinding::i
                         Log.i(TAG, "카카오톡으로 로그인 성공 ${token.accessToken}")
 
                         // 카카오 로그인 API 호출
+                        LoginService(this).tryPostLogin(LoginRequest(accessToken = token.accessToken, snsType = KAKAO_SNS_TYPE))
                     }
                 }
             } else {
                 UserApiClient.instance.loginWithKakaoAccount(this, callback = callback)
             }
         }
+    }
+
+    override fun onPostLoginSuccess(response: LoginResponse) {
+        if(response.isSuccess) {
+            // jwt  키 값 저장
+            prefs.setString(JWT_TOKEN, response.result.token)
+            // 메인 액티비티로 이동
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+            finish()
+        } else {
+            // isSuccess == false
+            Log.d(
+                TAG,
+                "LoginActivity - onPostLoginSuccess() : code : ${response.code}, message : ${response.message}"
+            )
+        }
+    }
+
+    override fun onPostLoginFailure(message: String) {
+        Log.d(TAG, "LoginActivity - onPostSignInFailure() : $message")
     }
 }
