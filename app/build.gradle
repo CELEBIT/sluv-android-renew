@@ -7,6 +7,7 @@ def propertiesFile = rootProject.file("local.properties")
 def properties = new Properties()
 properties.load(new FileInputStream(propertiesFile))
 def KAKAO_NATIVE_APP_KEY = properties.getProperty('KAKAO_NATIVE_APP_KEY')
+def GOOGLE_LOGIN_CLIENT_ID = properties.getProperty('GOOGLE_LOGIN_CLIENT_ID')
 
 android {
     namespace 'com.sluv.sluv'
@@ -23,6 +24,7 @@ android {
 
         manifestPlaceholders = [KAKAO_NATIVE_APP_KEY: KAKAO_NATIVE_APP_KEY]
         buildConfigField "String", "KAKAO_NATIVE_APP_KEY", properties['KAKAO_NATIVE_APP_KEY']
+        buildConfigField "String", "GOOGLE_LOGIN_CLIENT_ID", properties['GOOGLE_LOGIN_CLIENT_ID']
     }
 
     buildTypes {
@@ -68,4 +70,7 @@ dependencies {
 
     // 카카오 로그인
     implementation "com.kakao.sdk:v2-user:2.12.1"
+
+    // 구글 로그인
+    implementation 'com.google.android.gms:play-services-auth:20.4.1'
 }
