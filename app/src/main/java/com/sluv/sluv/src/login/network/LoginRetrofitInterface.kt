@@ -8,6 +8,6 @@ import retrofit2.http.POST
 
 interface LoginRetrofitInterface {
 
-    @POST("/auth/social-login")
+    @POST("/app/auth/social-login")
     fun postLogIn(@Body params: LoginRequest): Call<LoginResponse>
 }

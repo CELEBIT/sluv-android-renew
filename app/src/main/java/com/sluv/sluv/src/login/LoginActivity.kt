@@ -1,13 +1,27 @@
 package com.sluv.sluv.src.login
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.Scopes
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.Scope
+import com.google.android.gms.tasks.Task
 import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.common.model.ClientError
 import com.kakao.sdk.common.model.ClientErrorCause
 import com.kakao.sdk.user.UserApiClient
+import com.sluv.sluv.BuildConfig
+import com.sluv.sluv.R
 import com.sluv.sluv.config.ApplicationClass
+import com.sluv.sluv.config.ApplicationClass.Companion.GOOGLE_SNS_TYPE
 import com.sluv.sluv.config.ApplicationClass.Companion.JWT_TOKEN
 import com.sluv.sluv.config.ApplicationClass.Companion.KAKAO_SNS_TYPE
 import com.sluv.sluv.config.ApplicationClass.Companion.prefs
@@ -27,8 +41,39 @@ class LoginActivity : BaseActivity<ActivityLoginBinding>(ActivityLoginBinding::i
 
     val TAG = "LoginActivity"
 
+    //google client
+    private lateinit var googleSignInClient: GoogleSignInClient
+
+    private lateinit var resultLauncher: ActivityResultLauncher<Intent>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Configure 구글 로그인
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(BuildConfig.GOOGLE_LOGIN_CLIENT_ID)
+            .requestEmail()
+            .requestProfile()
+            .build()
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
+
+        // 구글 로그인 버튼 클릭
+        binding.googleLoginBtn.setOnClickListener {
+            val signInIntent = googleSignInClient.signInIntent
+            resultLauncher.launch(signInIntent)
+        }
+
+        resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val task: Task<GoogleSignInAccount> = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                val idToken = task.getResult(ApiException::class.java).idToken
+                // 구글 로그인 API 호출
+                LoginService(this).tryPostLogin(LoginRequest(idToken!!, GOOGLE_SNS_TYPE))
+            } else {
+                Log.d(TAG, "구글 로그인 resultCode Error")
+                Log.d(TAG, result.resultCode.toString())
+            }
+        }
 
         // 카카오 로그인 공통 callback 구성
         val callback: (OAuthToken?, Throwable?) -> Unit = { token, error ->
@@ -70,6 +115,7 @@ class LoginActivity : BaseActivity<ActivityLoginBinding>(ActivityLoginBinding::i
             }
         }
     }
+
 
     override fun onPostLoginSuccess(response: LoginResponse) {
         if(response.isSuccess) {
